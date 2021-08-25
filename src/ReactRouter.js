@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
@@ -9,10 +9,36 @@ import Body from './Body';
 import Register from './Register';
 import Login from './Login';
 import cookies from 'react-cookies';
+import API, { endpoint } from './API';
 
 export let UserContext = React.createContext();
 
 export default function ReactRouter() {
+    const [user, setUser] = useState(null);
+    
+    const login = async (username, password) => {
+        let res = await API.post(endpoint['login'], {
+            'client_id': 'c3p2UPW4dsiEIQo2ZHuvgfJRcizQFhDBCq86wIqO',
+            'client_secret': '44q7E6VBN5Q7ReObZdATtS899LKqkeDFVqxe5vZOIBnOMusoXoJ1Ju8vvncwOIjzi0RQza8WcSkK1w7IZ6yhvKwliZqDJJI2vJBpJS2F5gFauQE5MmJxdYsuNPxd3JfV',
+            'username': username,
+            'password': password,
+            'grant_type': 'password'
+        });
+        console.log(res.data);
+        
+        cookies.save('access_token', res.data.access_token);
+        
+        let user = await API.get(endpoint['current-user'],{
+            headers: {
+                'Authorization': `Bearer ${cookies.load('access_token')}`
+            }
+        });
+        console.log(user.data);
+        cookies.save('current-user', user.data);
+        
+        setUser(user);
+    }
+    
     let current_user = cookies.load('current-user');
     
     let r = <>
@@ -22,13 +48,12 @@ export default function ReactRouter() {
     
     if (current_user != null) {
         r = <>
-            {/* <Nav.Link href="/register">Register</Nav.Link> */}
-            <Nav.Link href="/">{current_user.username}</Nav.Link>
+            <Nav.Link href="/">Welcome {current_user.username}</Nav.Link>
         </>
     }
     
     return(
-        <UserContext.Provider>
+        <UserContext.Provider value={{user, login}}>
             <BrowserRouter>
                 <Container>
                     <Navbar bg="light" expand="lg">
