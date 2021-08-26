@@ -18,7 +18,7 @@ export default class Body extends React.Component {
             <>
                 <h1 className="text-center text-danger">LESSONS</h1>
                 <Row>
-                    {this.state.lessons.map(lesson => <ALesson lesson={lesson}/>)}
+                    {this.state.lessons.map(lesson => <ALesson lesson={lesson} key={lesson.id}/>)}
                 </Row>
             </>
         )
